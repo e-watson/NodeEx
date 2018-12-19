@@ -1,8 +1,8 @@
 const http = require('http');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
+const config = require('./config');
 
-const portNumber = 3000;
 const server = http.createServer((req, res) => {
   const parsedUrlStructure = url.parse(req.url, true);
   const path = parsedUrlStructure.pathname;
@@ -54,8 +54,8 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(portNumber, () => {
-  console.log(`Server has been started on port ${portNumber}`);
+server.listen(config.port, () => {
+  console.log(`Server has been started on port ${config.port} in ${config.envName} mode`);
 });
 
 // Router
