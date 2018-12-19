@@ -1,5 +1,6 @@
 const http = require('http');
 const url = require('url');
+const StringDecoder = require('string_decoder').StringDecoder;
 
 const portNumber = 3000;
 const server = http.createServer((req, res) => {
@@ -11,10 +12,23 @@ const server = http.createServer((req, res) => {
   const queryStruct = parsedUrlStructure.query;
   const headers = req.headers;
 
-  res.end('Hello, world!\n');
-  console.log(`Request received on path: ${trimmedPath} with method: ${httpMethod}\n`);
-  console.log(queryStruct);
-  console.log(headers);
+  const decoder = new StringDecoder('utf-8');
+  let buffer = '';
+
+  req.on('data', bufferData => {
+    buffer += decoder.write(bufferData);
+  });
+
+  req.on('end', () => {
+    buffer += decoder.end();
+
+    res.end('Hello, world!\n');
+
+    console.log(`Request received on path: ${trimmedPath} with method: ${httpMethod}\n`);
+    console.log(queryStruct);
+    console.log(headers);
+    console.log(buffer);
+  });
 });
 
 server.listen(portNumber, () => {
