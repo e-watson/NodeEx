@@ -13,6 +13,7 @@ const server = http.createServer((req, res) => {
 
   res.end('Hello, world!\n');
   console.log(`Request received on path: ${trimmedPath} with method: ${httpMethod}\n`);
+  console.log(queryStruct);
   console.log(headers);
 });
 
