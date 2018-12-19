@@ -22,15 +22,47 @@ const server = http.createServer((req, res) => {
   req.on('end', () => {
     buffer += decoder.end();
 
-    res.end('Hello, world!\n');
+    const chosenHandler = typeof(router[trimmedPath]) !== 'undefined'
+      ? router[trimmedPath]
+      : handlers.notFound;
 
-    console.log(`Request received on path: ${trimmedPath} with method: ${httpMethod}\n`);
-    console.log(queryStruct);
-    console.log(headers);
-    console.log(buffer);
+    const data = {
+      'trimmedPath': trimmedPath,
+      'queryStruct': queryStruct,
+      'method': httpMethod,
+      'headers': headers,
+      'payload': buffer
+    }
+
+    chosenHandler(data, (statusCode, payload) => {
+      statusCode = typeof(statusCode) === 'number' ? statusCode : 200;
+      payload = typeof(payload) === 'object' ? payload : {};
+
+      const payloadString = JSON.stringify(payload);
+
+      res.writeHead(statusCode);
+      res.end(payloadString);
+
+      console.log(`Request received on path: ${trimmedPath} with method: ${httpMethod}\n`);
+      console.log(queryStruct);
+      console.log(headers);
+      console.log(buffer);
+
+      console.log(`Returning this response: ${statusCode} .. ${payloadString}`);
+    });
   });
 });
 
 server.listen(portNumber, () => {
   console.log(`Server has been started on port ${portNumber}`);
 });
+
+// Router
+const handlers = {
+  sample: (data, callback) => { callback(406, { 'name': 'sample handler' }); },
+  notFound: (data, callback) => { callback(404); }
+};
+
+const router = {
+  'sample': handlers.sample
+};
