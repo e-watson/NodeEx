@@ -1,9 +1,34 @@
 const http = require('http');
+const https = require('https');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
 const config = require('./config');
+const fs = require('fs');
 
-const server = http.createServer((req, res) => {
+// HTTP server
+const httpServer = http.createServer((req, res) => {
+  unifiedServer(req, res);
+});
+
+httpServer.listen(config.httpPort, () => {
+  console.log(`Server has been started on port ${config.httpPort} in ${config.envName} mode`);
+});
+
+// HTTPS server
+const httpsServerOptions = {
+  key: fs.readFileSync('./https/key.pem'),
+  cert: fs.readFileSync('./https/cert.pem')
+};
+const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
+  unifiedServer(req, res);
+});
+
+httpsServer.listen(config.httpsPort, () => {
+  console.log(`Server has been started on port ${config.httpsPort} in ${config.envName} mode`);
+});
+
+// HTTP and HTTPS servers
+const unifiedServer = (req, res) => {
   const parsedUrlStructure = url.parse(req.url, true);
   const path = parsedUrlStructure.pathname;
 
@@ -52,11 +77,7 @@ const server = http.createServer((req, res) => {
       console.log(`Returning this response: ${statusCode} .. ${payloadString}`);
     });
   });
-});
-
-server.listen(config.port, () => {
-  console.log(`Server has been started on port ${config.port} in ${config.envName} mode`);
-});
+};
 
 // Router
 const handlers = {
